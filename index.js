@@ -1,29 +1,62 @@
 const inquirer = require("inquirer");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const cTable = require("console.table");
 // const table = cTable.getTable([])
 
 // Enable access to .env variables
 require("dotenv").config();
 
-// Connect to database
-// const db = mysql.createConnection(
-//   {
-//     host: "localhost",
-//     user: process.env.user,
-//     password: process.env.password,
-//     database: process.env.database,
-//   },
-//   console.log(`Connected to the ${process.env.database} database.`)
-// );
+async function accessDB(action) {
+  // Connect to database
+  try {
+    const db = await mysql.createConnection(
+      {
+        host: "localhost",
+        user: process.env.user,
+        password: process.env.password,
+        database: process.env.database,
+      }
+      // console.log(`Connected to the ${process.env.database} database.`)
+    );
 
-// Query database
-// db.query("SELECT * FROM students", function (err, results) {
-//   console.log(results);
-// });
+    switch (action) {
+      case "View All Departments":
+        // Query database
+        const results = await db.query("SELECT * FROM department");
+        console.table(results[0]);
+        break;
+      case "View All Roles":
+        console.log("query - view all roles");
+        break;
+      case "View All Employees":
+        console.log("query - view all employees");
+        break;
+      case "Add a Department":
+        console.log("update - add a department");
+        break;
+      case "Add a Role":
+        console.log("update - add a role");
+        break;
+      case "Add an Employee":
+        console.log("update - add a employee");
+        break;
+      case "Update an Employee Role":
+        console.log("update - Update an Employee Role");
+        break;
+      default:
+        console.log("Please select an action");
+        break;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+// recursively call prompt
 
-async function main() {
-  const action = await inquirer
+console.log("main");
+
+function main() {
+  inquirer
     .prompt([
       {
         type: "list",
@@ -40,34 +73,11 @@ async function main() {
         ],
       },
     ])
-    .then((res) => res.action); // return response
-
-  switch (action) {
-    case "View All Departments":
-      console.log("query - view all departments");
-      break;
-    case "View All Roles":
-      console.log("query - view all roles");
-      break;
-    case "View All Employees":
-      console.log("query - view all employees");
-      break;
-    case "Add a Department":
-      console.log("update - add a department");
-      break;
-    case "Add a Role":
-      console.log("update - add a role");
-      break;
-    case "Add an Employee":
-      console.log("update - add a employee");
-      break;
-    case "Update an Employee Role":
-      console.log("update - Update an Employee Role");
-      break;
-    default:
-      console.log("Please select an action");
-      break;
-  }
+    .then(async (res) => {
+      await accessDB(res.action);
+      console.log("___________________________________");
+      main();
+    });
 }
 
 main();
