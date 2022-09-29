@@ -20,6 +20,7 @@ async function accessDB(action) {
     );
 
     let results = "";
+    let response = "";
 
     switch (action) {
       case "View All Departments":
@@ -37,7 +38,7 @@ async function accessDB(action) {
         console.table(results[0]);
         break;
       case "Add a Department":
-        const response = await inquirer.prompt([
+        response = await inquirer.prompt([
           {
             type: "input",
             name: "department",
@@ -45,17 +46,71 @@ async function accessDB(action) {
           },
         ]);
         insert = await db.query(
-          `INSERT INTO department (id, name) VALUES (default, ?)`,
+          `INSERT INTO department (id, name) VALUES (default, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
           response.department
         );
         results = await db.query("SELECT * FROM department");
         console.table(results[0]);
         break;
       case "Add a Role":
-        console.log("update - add a role");
+        response = await inquirer.prompt([
+          {
+            type: "input",
+            name: "name",
+            message: "Input name of role to add",
+          },
+          {
+            type: "input",
+            name: "salary",
+            message: "Input salary of role",
+          },
+          {
+            type: "input",
+            name: "department",
+            message: "Input department of role",
+          },
+        ]);
+        insert = await db.query(
+          `INSERT INTO role (id, title, salary, department_id) VALUES (default, ?, ?, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
+          [response.name, response.salary, response.department]
+        );
+        results = await db.query("SELECT * FROM role");
+        console.table(results[0]);
         break;
       case "Add an Employee":
-        console.log("update - add a employee");
+        response = await inquirer.prompt([
+          {
+            type: "input",
+            name: "firstName",
+            message: "Input first name of employee",
+          },
+          {
+            type: "input",
+            name: "lastName",
+            message: "Input last name of employee",
+          },
+          {
+            type: "input",
+            name: "role",
+            message: "Input role of employee",
+          },
+          {
+            type: "input",
+            name: "manager",
+            message: "Input manager id",
+          },
+        ]);
+        insert = await db.query(
+          `INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES (default, ?, ?, ?, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
+          [
+            response.firstName,
+            response.lastName,
+            response.role,
+            response.manager,
+          ]
+        );
+        results = await db.query("SELECT * FROM department");
+        console.table(results[0]);
         break;
       case "Update an Employee Role":
         console.log("update - Update an Employee Role");
