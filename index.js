@@ -33,19 +33,29 @@ async function accessDB(action) {
     // switch case to handle user input action
     switch (action) {
       case "View All Departments":
-        // Query database
+        // Query database for departments
         results = await db.query("SELECT * FROM department");
         console.table(results[0]);
         break;
 
       case "View All Roles":
-        // Query database
-        results = await db.query("SELECT * FROM role");
+        // Query database for roles, join department on id
+        // results = await db.query("SELECT * FROM role");
+        results = await db.query(
+          "SELECT role.id, role.title, role.salary, department.name AS department FROM role JOIN department ON role.department_id = department.id "
+        );
+
         console.table(results[0]);
         break;
 
       case "View All Employees":
-        results = await db.query("SELECT * FROM employee");
+        // results = await db.query("SELECT * FROM employee");
+        // results = await db.query(
+        //   "SELECT employee.id, employee.first_name, employee.last_name, employee.manager_id AS manager, role.title, role.salary, department.name AS department FROM employee e1, employee e2 JOIN role ON e1.role_id = role.id JOIN department ON role.department_id = department.id JOIN e2 ON e1.manager_id = e2.id"
+        // );
+        results = await db.query(
+          "SELECT ePK.id, ePK.first_name, ePK.last_name, CONCAT(eFK.first_name, ' ', eFK.last_name) AS manager, role.title, role.salary, department.name AS department FROM employee AS ePK JOIN role ON ePK.role_id = role.id JOIN department ON role.department_id = department.id LEFT OUTER JOIN employee as eFK ON ePK.manager_id = eFK.id"
+        );
         console.table(results[0]);
         break;
 
@@ -59,7 +69,7 @@ async function accessDB(action) {
         ]);
         insert = await db.query(
           `INSERT INTO department (id, name) VALUES (default, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
-          response.department.toUpperCase()
+          response.department
         );
         results = await db.query("SELECT * FROM department");
         console.table(results[0]);
@@ -102,12 +112,11 @@ async function accessDB(action) {
         // insert results into database
         insert = await db.query(
           `INSERT INTO role (id, title, salary, department_id) VALUES (default, ?, ?, ?)`,
-          [response.name.toUpperCase(), response.salary, obj.id]
+          [response.name, response.salary, obj.id]
         );
 
         // query to show updated role table, log to screen
         results = await db.query("SELECT * FROM role");
-        console.table(results[0]);
         break;
 
       case "Add an Employee":
@@ -157,25 +166,17 @@ async function accessDB(action) {
 
         // lookup id associated with role selected
         obj = results[0].find((obj) => obj.title === response.role);
-        console.log(obj);
 
         // lookup id associated with manager selected
         obj2 = results2[0].find(
           (obj) => obj.first_name === response.manager.split(" ")[0]
         );
-        console.log(obj2);
 
         insert = await db.query(
           `INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES (default, ?, ?, ?, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
-          [
-            response.firstName.toUpperCase(),
-            response.lastName.toUpperCase(),
-            obj.id,
-            obj2.id,
-          ]
+          [response.firstName, response.lastName, obj.id, obj2.id]
         );
         results = await db.query("SELECT * FROM employee");
-        console.table(results[0]);
         break;
 
       case "Update an Employee Role":
@@ -218,20 +219,21 @@ async function accessDB(action) {
             obj.first_name === response.employee.split(" ")[0] &&
             obj.last_name === response.employee.split(" ")[1]
         );
-        console.log(obj);
 
         // lookup id associated with role selected
         obj2 = results2[0].find((obj) => obj.title === response.role);
-        console.log(obj2);
 
         insert = await db.query(
           `UPDATE employee SET role_id = ? WHERE id = ?`,
           [obj2.id, obj.id]
         );
         results = await db.query("SELECT * FROM employee");
-        console.table(results[0]);
 
         break;
+      case "Quit":
+        console.log("Goodbye!");
+        return;
+
       default:
         console.log("Please select an action");
         break;
@@ -256,13 +258,18 @@ function main() {
           "Add a Role",
           "Add an Employee",
           "Update an Employee Role",
+          "Quit",
         ],
       },
     ])
     .then(async (res) => {
       await accessDB(res.action);
-      console.log("___________________________________");
-      main();
+      if (res.action === "Quit") {
+        return process.exit(0);
+      } else {
+        console.log("___________________________________");
+        main();
+      }
     });
 }
 
