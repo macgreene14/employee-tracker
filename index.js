@@ -72,7 +72,7 @@ async function accessDB(action) {
           response.department
         );
         results = await db.query("SELECT * FROM department");
-        console.table(results[0]);
+        // console.table(results[0]);
         break;
 
       case "Add a Role":
@@ -85,7 +85,6 @@ async function accessDB(action) {
           let id = entry.id;
           list.push(dept);
         }
-        console.log(list);
 
         response = await inquirer.prompt([
           {
@@ -115,8 +114,6 @@ async function accessDB(action) {
           [response.name, response.salary, obj.id]
         );
 
-        // query to show updated role table, log to screen
-        results = await db.query("SELECT * FROM role");
         break;
 
       case "Add an Employee":
@@ -176,7 +173,6 @@ async function accessDB(action) {
           `INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES (default, ?, ?, ?, ?)`, // default, 0, or NULL should work as place holder for autoincrement id
           [response.firstName, response.lastName, obj.id, obj2.id]
         );
-        results = await db.query("SELECT * FROM employee");
         break;
 
       case "Update an Employee Role":
@@ -227,7 +223,6 @@ async function accessDB(action) {
           `UPDATE employee SET role_id = ? WHERE id = ?`,
           [obj2.id, obj.id]
         );
-        results = await db.query("SELECT * FROM employee");
 
         break;
       case "Quit":
@@ -268,7 +263,7 @@ function main() {
         return process.exit(0);
       } else {
         console.log("___________________________________");
-        main();
+        main(); // resursively call main()
       }
     });
 }
