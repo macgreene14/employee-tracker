@@ -44,7 +44,7 @@ https://user-images.githubusercontent.com/33014789/193425120-21ca49d2-7385-44fd-
     
   ## Tests
   
-  Run 'npm test' to execute test suite via Jest module. 
+  There are no tests included with the current iteration of the application.
   
   ## Questions?
 
